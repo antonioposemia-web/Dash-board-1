@@ -313,6 +313,26 @@ function renderTudo() {
   renderChips();
 }
 
+// Chamado quando o CSV muda: atualiza selects, rótulos e gráficos sem recarregar.
+function refrescarDados() {
+  const series = unicos("Serie");
+  const turmas = unicos("Turma");
+
+  preencherSelect("filtroSerie", series, "Todas as séries");
+  preencherSelect("filtroTurma", turmas, "Todas as turmas");
+
+  // Descarta filtros que deixaram de existir no arquivo
+  if (filtros.serie && !series.includes(filtros.serie)) filtros.serie = "";
+  if (filtros.turma && !turmas.includes(filtros.turma)) filtros.turma = "";
+  sincronizarControles();
+
+  // Atualiza rótulos dos gráficos que dependem dos valores únicos
+  charts.serie.data.labels = series;
+  charts.turma.data.labels = turmas.map((t) => "Turma " + t);
+
+  renderTudo();
+}
+
 /* ============================================================
    Eventos
    ============================================================ */
@@ -343,4 +363,8 @@ function init() {
   renderTudo();
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", async () => {
+  await carregarDados();
+  init();
+  iniciarAtualizacaoAutomatica(refrescarDados);
+});

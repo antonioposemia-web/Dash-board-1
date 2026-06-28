@@ -224,6 +224,19 @@ function renderTabela(alunos) {
   } ${ordenacao.desc ? "↓" : "↑"} • clique no cabeçalho p/ ordenar`;
 }
 
+// Chamado quando o CSV muda: atualiza o filtro de série e redesenha os cards.
+function refrescarDados() {
+  const series = [...new Set(ALUNOS.map((a) => a.Serie))].sort();
+  const sel = document.getElementById("filtroSerie");
+  const atual = sel.value;
+  sel.innerHTML =
+    `<option value="">Todas as séries</option>` +
+    series.map((s) => `<option value="${s}">${s}</option>`).join("");
+  sel.value = series.includes(atual) ? atual : "";
+  filtroSerie = sel.value;
+  renderCards();
+}
+
 /* ---------- Start ---------- */
 function init() {
   Chart.defaults.font.family = "Poppins, sans-serif";
@@ -232,4 +245,8 @@ function init() {
   renderCards();
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", async () => {
+  await carregarDados();
+  init();
+  iniciarAtualizacaoAutomatica(refrescarDados);
+});

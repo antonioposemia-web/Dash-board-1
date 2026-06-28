@@ -1,6 +1,7 @@
-// Dados embutidos a partir de notas_alunos.csv
-// (embutidos para que o dashboard funcione abrindo o index.html diretamente, sem servidor)
-const CSV_TEXT = `Nome,Serie,Turma,Matematica,Portugues,Historia,Geografia,Fisica,Quimica,Biologia,Media
+// Fonte de dados do dashboard.
+// Prioridade: lê o arquivo notas_alunos.csv em tempo real (precisa de um servidor local).
+// Reserva: se o arquivo for aberto direto pelo navegador (file://), usa a cópia embutida abaixo.
+const CSV_FALLBACK = `Nome,Serie,Turma,Matematica,Portugues,Historia,Geografia,Fisica,Quimica,Biologia,Media
 Ana Beatriz Souza,1º Ano,A,7.5,8.0,6.5,7.0,5.5,6.0,8.5,7.0
 Bruno Carvalho Lima,1º Ano,A,5.0,6.5,7.0,8.0,4.5,5.5,6.0,6.1
 Carla Mendes Rocha,1º Ano,A,9.0,8.5,9.5,8.0,9.0,8.5,9.0,8.8
@@ -50,22 +51,105 @@ Davi Lucca Bezerra,2º Ano,A,6.0,6.5,6.0,6.5,5.5,6.0,6.5,6.1
 Emanuelle Pinto Galvao,2º Ano,B,8.5,9.0,8.5,9.0,8.0,8.5,9.0,8.6
 Fabio Junior Sena,3º Ano,A,5.0,4.5,5.0,5.5,4.5,5.0,5.5,5.0
 Giovanna Castro Aragao,3º Ano,B,9.5,9.0,9.5,9.0,9.0,9.5,9.0,9.2
-Heitor Nascimento Vidal,3º Ano,C,6.5,7.0,6.5,7.0,6.0,6.5,7.0,6.6`;
+Heitor Nascimento Vidal,3º Ano,C,6.5,7.0,6.5,7.0,6.0,6.5,7.0,6.6
+Lay Montenegro,3º Ano,C,6.5,7.0,6.5,7.0,6.0,6.5,7.0,6.6
+Antonio da Silva,3º Ano,C,8.0,8.0,8.5,8.0,7.5,8.0,8.0,8.0`;
 
 const DISCIPLINAS = ["Matematica", "Portugues", "Historia", "Geografia", "Fisica", "Quimica", "Biologia"];
 
+function arredondar1(n) {
+  return Math.round(n * 10) / 10;
+}
+
 function parseCSV(text) {
-  const linhas = text.trim().split("\n");
-  const cabecalho = linhas[0].split(",");
+  // remove BOM e normaliza quebras de linha (Windows usa \r\n)
+  const limpo = text.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
+  const linhas = limpo.trim().split("\n").filter((l) => l.trim() !== "");
+  const cabecalho = linhas[0].split(",").map((c) => c.trim());
   return linhas.slice(1).map((linha) => {
     const valores = linha.split(",");
     const registro = {};
     cabecalho.forEach((coluna, i) => {
-      const valor = valores[i];
-      registro[coluna] = isNaN(Number(valor)) ? valor : Number(valor);
+      const valor = (valores[i] ?? "").trim();
+      registro[coluna] = valor !== "" && !isNaN(Number(valor)) ? Number(valor) : valor;
     });
     return registro;
   });
 }
 
-const ALUNOS = parseCSV(CSV_TEXT);
+// Média aritmética das disciplinas (ignora a coluna Media do CSV).
+function calcularMediaAluno(registro) {
+  const notas = DISCIPLINAS.map((d) => registro[d]).filter(
+    (n) => typeof n === "number" && !Number.isNaN(n)
+  );
+  if (!notas.length) return null;
+  return arredondar1(notas.reduce((soma, nota) => soma + nota, 0) / notas.length);
+}
+
+// Garante dados consistentes antes de alimentar o dashboard.
+function normalizarAlunos(registros) {
+  const alunos = [];
+
+  registros.forEach((registro, indice) => {
+    const nome = String(registro.Nome ?? "").trim();
+    if (!nome) {
+      console.warn(`Linha ${indice + 2} ignorada: nome vazio.`);
+      return;
+    }
+
+    const aluno = { ...registro, Nome: nome };
+    const media = calcularMediaAluno(aluno);
+
+    if (media === null) {
+      console.warn(`Aluno "${nome}" ignorado: sem notas válidas nas disciplinas.`);
+      return;
+    }
+
+    aluno.Media = media;
+    alunos.push(aluno);
+  });
+
+  return alunos;
+}
+
+// Preenchido por carregarDados() antes da inicialização das páginas.
+let ALUNOS = [];
+
+// Guarda o último conteúdo lido para detectar mudanças no arquivo.
+let _ultimoCsvTexto = null;
+
+// Lê o notas_alunos.csv (via servidor). Em caso de falha, usa a cópia embutida.
+async function carregarDados() {
+  try {
+    const resp = await fetch("notas_alunos.csv", { cache: "no-store" });
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    const texto = await resp.text();
+    _ultimoCsvTexto = texto;
+    ALUNOS = normalizarAlunos(parseCSV(texto));
+  } catch (e) {
+    console.warn(
+      "Não foi possível ler notas_alunos.csv (abra via servidor local). Usando dados embutidos.",
+      e
+    );
+    ALUNOS = normalizarAlunos(parseCSV(CSV_FALLBACK));
+  }
+  return ALUNOS;
+}
+
+// Verifica o arquivo periodicamente e, ao detectar mudança, atualiza ALUNOS
+// e chama aoAtualizar() para a página redesenhar — sem precisar recarregar (F5).
+function iniciarAtualizacaoAutomatica(aoAtualizar, intervaloMs = 3000) {
+  setInterval(async () => {
+    try {
+      const resp = await fetch("notas_alunos.csv", { cache: "no-store" });
+      if (!resp.ok) return;
+      const texto = await resp.text();
+      if (texto === _ultimoCsvTexto) return; // nada mudou
+      _ultimoCsvTexto = texto;
+      ALUNOS = normalizarAlunos(parseCSV(texto));
+      aoAtualizar();
+    } catch (e) {
+      // silencioso: arquivo aberto sem servidor ou indisponível momentaneamente
+    }
+  }, intervaloMs);
+}
