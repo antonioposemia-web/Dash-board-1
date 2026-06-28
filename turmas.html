@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart • Turmas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-mark">🎓</span>
+        <span class="logo-text">Smart</span>
+      </div>
+      <nav class="menu">
+        <a class="menu-item" href="index.html">
+          <span class="ic">▦</span>
+          <span class="menu-label">Dashboard <small>Prof. Antonio</small></span>
+        </a>
+        <a class="menu-item" href="#"><span class="ic">📚</span> Disciplinas</a>
+        <a class="menu-item active" href="turmas.html"><span class="ic">🗓️</span> Turmas</a>
+        <a class="menu-item" href="#"><span class="ic">📄</span> Boletins</a>
+        <a class="menu-item" href="#"><span class="ic">💬</span> Fórum</a>
+        <a class="menu-item" href="#"><span class="ic">📊</span> Avaliações</a>
+        <a class="menu-item" href="#"><span class="ic">⚙️</span> Ajustes</a>
+      </nav>
+      <button class="logout" onclick="location.href='index.html'">← Voltar ao Dashboard</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Turmas — Visão Detalhada 🗓️</h1>
+          <p class="sub">Clique em uma turma para ver os detalhes completos.</p>
+        </div>
+        <div class="user">
+          <div class="filtro">
+            <label>Filtrar por série</label>
+            <select id="filtroSerie"></select>
+          </div>
+          <div class="avatar">
+            <img src="https://i.pravatar.cc/80?img=12" alt="usuário" />
+            <span>Prof. Antonio</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Cards de turmas -->
+      <section>
+        <h2 class="section-title">Selecione uma turma</h2>
+        <div class="turma-grid" id="turmaGrid"></div>
+      </section>
+
+      <!-- Detalhes -->
+      <section id="detalhes">
+        <h2 class="section-title">Detalhes — <span id="detTurmaNome">—</span></h2>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="kpi-ic kpi-blue">👥</div>
+            <div><span class="kpi-label">Alunos na turma</span><strong class="kpi-value" id="detAlunos">0</strong></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-ic kpi-green">⭐</div>
+            <div><span class="kpi-label">Média da turma</span><strong class="kpi-value" id="detMedia">0</strong></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-ic kpi-purple">✅</div>
+            <div><span class="kpi-label">Aprovação</span><strong class="kpi-value" id="detAprov">0%</strong></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-ic kpi-orange">🏆</div>
+            <div><span class="kpi-label">Destaque</span><strong class="kpi-value" id="detTop">-</strong><span class="kpi-sub" id="detTopNome">-</span></div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="card-head"><h3>Média por Disciplina — Turma vs Escola</h3></div>
+            <div class="chart-wrap"><canvas id="chartDiscTurma"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Faixas de Desempenho</h3></div>
+            <div class="chart-wrap"><canvas id="chartFaixaTurma"></canvas></div>
+          </div>
+
+          <div class="card card-wide">
+            <div class="card-head">
+              <h3>Alunos da turma</h3>
+              <span class="hint" id="tabelaInfo">ordenado por média</span>
+            </div>
+            <div class="tabela-wrap">
+              <table class="tabela" id="tabelaAlunos">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="dados.js"></script>
+  <script src="turmas.js"></script>
+</body>
+</html>

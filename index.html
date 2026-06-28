@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart • Dashboard de Notas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-mark">🎓</span>
+        <span class="logo-text">Smart</span>
+      </div>
+      <nav class="menu">
+        <a class="menu-item active" href="index.html">
+          <span class="ic">▦</span>
+          <span class="menu-label">Dashboard <small>Prof. Antonio</small></span>
+        </a>
+        <a class="menu-item" href="#"><span class="ic">📚</span> Disciplinas</a>
+        <a class="menu-item" href="turmas.html"><span class="ic">🗓️</span> Turmas</a>
+        <a class="menu-item" href="#"><span class="ic">📄</span> Boletins</a>
+        <a class="menu-item" href="#"><span class="ic">💬</span> Fórum</a>
+        <a class="menu-item" href="#"><span class="ic">📊</span> Avaliações</a>
+        <a class="menu-item" href="#"><span class="ic">⚙️</span> Ajustes</a>
+      </nav>
+      <button class="logout" id="btnReset">⟲ Limpar filtros</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div>
+          <h1>Olá, Coordenação! 👋</h1>
+          <p class="sub">Acompanhe o desempenho dos alunos em tempo real.</p>
+        </div>
+        <div class="user">
+          <div class="search">
+            <span>🔎</span>
+            <input type="text" id="busca" placeholder="Buscar aluno..." />
+          </div>
+          <div class="avatar">
+            <img src="https://i.pravatar.cc/80?img=47" alt="usuário" />
+            <span>Grace Stanley</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Filtros -->
+      <section class="filtros">
+        <div class="filtro">
+          <label>Série</label>
+          <select id="filtroSerie"></select>
+        </div>
+        <div class="filtro">
+          <label>Turma</label>
+          <select id="filtroTurma"></select>
+        </div>
+        <div class="filtro">
+          <label>Disciplina (foco)</label>
+          <select id="filtroDisciplina"></select>
+        </div>
+        <div class="filtro">
+          <label>Desempenho</label>
+          <select id="filtroFaixa">
+            <option value="">Todos</option>
+            <option value="Excelente">Excelente (≥ 8)</option>
+            <option value="Bom">Bom (6 – 8)</option>
+            <option value="Recuperação">Recuperação (&lt; 6)</option>
+          </select>
+        </div>
+        <div class="chips" id="chips"></div>
+      </section>
+
+      <!-- KPIs -->
+      <section class="kpis">
+        <div class="kpi">
+          <div class="kpi-ic kpi-blue">👥</div>
+          <div>
+            <span class="kpi-label">Total de Alunos</span>
+            <strong class="kpi-value" id="kpiTotal">0</strong>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-ic kpi-green">⭐</div>
+          <div>
+            <span class="kpi-label">Média Geral</span>
+            <strong class="kpi-value" id="kpiMedia">0</strong>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-ic kpi-purple">✅</div>
+          <div>
+            <span class="kpi-label">Taxa de Aprovação</span>
+            <strong class="kpi-value" id="kpiAprov">0%</strong>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-ic kpi-orange">🏆</div>
+          <div>
+            <span class="kpi-label">Melhor Média</span>
+            <strong class="kpi-value" id="kpiTop">-</strong>
+            <span class="kpi-sub" id="kpiTopNome">-</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Gráficos -->
+      <section class="grid">
+        <div class="card card-wide">
+          <div class="card-head">
+            <h3>Média por Disciplina</h3>
+            <span class="hint">clique numa barra p/ focar a disciplina</span>
+          </div>
+          <div class="chart-wrap"><canvas id="chartDisciplina"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Faixas de Desempenho</h3>
+            <span class="hint">clique p/ filtrar</span>
+          </div>
+          <div class="chart-wrap"><canvas id="chartFaixa"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Média por Série</h3>
+            <span class="hint">clique p/ filtrar</span>
+          </div>
+          <div class="chart-wrap"><canvas id="chartSerie"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Distribuição por Turma</h3>
+            <span class="hint">clique p/ filtrar</span>
+          </div>
+          <div class="chart-wrap"><canvas id="chartTurma"></canvas></div>
+        </div>
+
+        <div class="card card-wide">
+          <div class="card-head">
+            <h3>Top 10 Alunos <small id="rankLabel">(por média geral)</small></h3>
+            <span class="hint">clique numa barra p/ buscar o aluno</span>
+          </div>
+          <div class="chart-wrap chart-tall"><canvas id="chartRanking"></canvas></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="dados.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
